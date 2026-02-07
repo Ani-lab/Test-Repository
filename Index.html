@@ -54,32 +54,41 @@
   <button id="no">NO 🙈</button>
 
   <script>
-    (function(){
-      emailjs.init("DpTidzhCITI2TWaa3"); // replace
-    })();
+  (function(){
+    emailjs.init("DpTidzhCITI2TWaa3");
+  })();
 
-    document.getElementById("yes").onclick = function () {
-      const email = document.getElementById("userEmail").value;
+  document.getElementById("yes").onclick = function () {
+    const email = document.getElementById("userEmail").value;
 
-      if (!email) {
-        alert("Please enter your email 💌");
-        return;
-      }
+    if (!email) {
+      alert("Please enter your email 💌");
+      return;
+    }
 
-      emailjs.send("service_h0ag0da", "template_jt6xzng", {
-        user_email: email,
-        message: "Valentine Accepted 💖"
-      })
-      .then(function() {
-        alert("Email sent! 💘 See you on Valentine’s 😍");
-      }, function(error) {
-        alert("Something went wrong 😢");
-      });
-    };
+    emailjs.send("service_h0ag0da", "template_jt6xzng", {
+      user_email: email,
+      message: "Valentine Accepted 💖"
+    })
+    .then(function() {
+      alert("Email sent! 💘 See you on Valentine’s 😍");
+    }, function(error) {
+      alert("Something went wrong 😢");
+    });
+  };
 
-    document.getElementById("no").onclick = function () {
-      alert("Rejected 💔 but still special 😌");
-    };
+  const noBtn = document.getElementById("no");
+
+  ["mouseover", "touchstart"].forEach(event => {
+    noBtn.addEventListener(event, () => {
+      const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 20);
+      const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 20);
+
+      noBtn.style.position = "absolute";
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top = `${y}px`;
+    });
+  });
   </script>
 
 </body>
