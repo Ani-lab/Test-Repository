@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Will You Be My Valentine? 💘</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+  <style>
+    body {
+      background: #ffe6eb;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      padding-top: 80px;
+    }
+    h1 {
+      color: #d6336c;
+    }
+    input {
+      padding: 12px;
+      font-size: 16px;
+      width: 260px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 14px 28px;
+      font-size: 18px;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    #yes {
+      background: #ff4d6d;
+      color: white;
+    }
+    #no {
+      background: #adb5bd;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Will you be my Valentine? 💖</h1>
+
+  <input type="email" id="userEmail" placeholder="Enter your email 💌" required>
+  <br>
+
+  <button id="yes">YES 😍</button>
+  <button id="no">NO 🙈</button>
+
+  <script>
+    (function(){
+      emailjs.init("DpTidzhCITI2TWaa3"); // replace
+    })();
+
+    document.getElementById("yes").onclick = function () {
+      const email = document.getElementById("userEmail").value;
+
+      if (!email) {
+        alert("Please enter your email 💌");
+        return;
+      }
+
+      emailjs.send("Default_service", "template_jt6xzng", {
+        user_email: email,
+        message: "Valentine Accepted 💖"
+      })
+      .then(function() {
+        alert("Email sent! 💘 See you on Valentine’s 😍");
+      }, function(error) {
+        alert("Something went wrong 😢");
+      });
+    };
+
+    document.getElementById("no").onclick = function () {
+      alert("Rejected 💔 but still special 😌");
+    };
+  </script>
+
+</body>
+</html>
