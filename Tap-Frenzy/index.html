@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Tap Frenzy</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #1e1e1e, #121212);
+  color: white;
+  font-family: system-ui, Arial, sans-serif;
+  text-align: center;
+}
+
+h1 {
+  margin-top: 20px;
+}
+
+#info {
+  display: flex;
+  justify-content: space-around;
+  margin: 10px;
+  font-size: 18px;
+}
+
+#tapArea {
+  margin: 20px auto;
+  width: 85vw;
+  height: 55vh;
+  background: #ff4757;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  user-select: none;
+}
+
+#tapArea:active {
+  transform: scale(0.98);
+}
+
+button {
+  margin: 15px;
+  padding: 12px 26px;
+  font-size: 18px;
+  border-radius: 12px;
+  border: none;
+  background: #1e90ff;
+  color: white;
+}
+
+#leaderboard {
+  margin: 20px;
+  text-align: left;
+  max-width: 320px;
+  margin-inline: auto;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🔥 Tap Frenzy 🔥</h1>
+
+<div id="info">
+  <div>⏱ Time: <span id="time">10</span>s</div>
+  <div>🎯 Score: <span id="score">0</span></div>
+</div>
+
+<div id="tapArea">TAP!</div>
+
+<button onclick="startGame()">Start Game</button>
+
+<div id="leaderboard"></div>
+
+<script>
+let score = 0;
+let timeLeft = 10;
+let timer = null;
+let gameRunning = false;
+
+const tapArea = document.getElementById("tapArea");
+const scoreEl = document.getElementById("score");
+const timeEl = document.getElementById("time");
+const leaderboardEl = document.getElementById("leaderboard");
+
+tapArea.addEventListener("touchstart", tap);
+tapArea.addEventListener("click", tap);
+
+function tap() {
+  if (!gameRunning) return;
+  score++;
+  scoreEl.textContent = score;
+}
+
+function startGame() {
+  if (gameRunning) return;
+
+  score = 0;
+  timeLeft = 10;
+  gameRunning = true;
+  scoreEl.textContent = score;
+  timeEl.textContent = timeLeft;
+  tapArea.textContent = "GO!";
+
+  timer = setInterval(() => {
+    timeLeft--;
+    timeEl.textContent = timeLeft;
+
+    if (timeLeft <= 0) {
+      endGame();
+    }
+  }, 1000);
+}
+
+function endGame() {
+  clearInterval(timer);
+  gameRunning = false;
+  tapArea.textContent = "TIME UP!";
+
+  setTimeout(() => {
+    const name = prompt("Enter your name for the leaderboard:");
+    if (name) saveScore(name, score);
+    renderLeaderboard();
+  }, 200);
+}
+
+/* ===== LEADERBOARD (LocalStorage) ===== */
+
+function saveScore(name, score) {
+  let scores = JSON.parse(localStorage.getItem("tapFrenzyScores")) || [];
+  scores.push({ name, score });
+  scores.sort((a, b) => b.score - a.score);
+  scores = scores.slice(0, 10);
+  localStorage.setItem("tapFrenzyScores", JSON.stringify(scores));
+}
+
+function renderLeaderboard() {
+  const scores = JSON.parse(localStorage.getItem("tapFrenzyScores")) || [];
+  let html = "<h3>🏆 Leaderboard</h3>";
+
+  if (scores.length === 0) {
+    html += "<p>No scores yet</p>";
+  } else {
+    scores.forEach((s, i) => {
+      html += `<p>${i + 1}. <strong>${s.name}</strong> – ${s.score}</p>`;
+    });
+  }
+
+  leaderboardEl.innerHTML = html;
+}
+
+renderLeaderboard();
+</script>
+
+</body>
+</html>
