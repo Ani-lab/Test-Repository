@@ -56,15 +56,23 @@ button {
   border: none;
   background: #1e90ff;
   color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
 }
 
 #leaderboard {
-  margin: 20px;
+  margin: 20px auto;
   text-align: left;
   max-width: 320px;
-  margin-inline: auto;
 }
 </style>
+
+<!-- Firebase COMPAT SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
@@ -77,12 +85,27 @@ button {
 </div>
 
 <div id="tapArea">TAP!</div>
-
 <button onclick="startGame()">Start Game</button>
 
 <div id="leaderboard"></div>
 
 <script>
+/* ================= FIREBASE INIT ================= */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDRJdaWQEbB7PzA8oH4xSG8lWuBUtCCa5s",
+  authDomain: "tap-frenzy-9b5f4.firebaseapp.com",
+  projectId: "tap-frenzy-9b5f4",
+  storageBucket: "tap-frenzy-9b5f4.appspot.com",
+  messagingSenderId: "938291260652",
+  appId: "1:938291260652:web:118d14682b38e3f2f8c9c9"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* ================= GAME LOGIC ================= */
+
 let score = 0;
 let timeLeft = 10;
 let timer = null;
@@ -93,7 +116,7 @@ const scoreEl = document.getElementById("score");
 const timeEl = document.getElementById("time");
 const leaderboardEl = document.getElementById("leaderboard");
 
-tapArea.addEventListener("touchstart", tap);
+tapArea.addEventListener("touchstart", tap, { passive: true });
 tapArea.addEventListener("click", tap);
 
 function tap() {
@@ -108,6 +131,7 @@ function startGame() {
   score = 0;
   timeLeft = 10;
   gameRunning = true;
+
   scoreEl.textContent = score;
   timeEl.textContent = timeLeft;
   tapArea.textContent = "GO!";
@@ -116,9 +140,7 @@ function startGame() {
     timeLeft--;
     timeEl.textContent = timeLeft;
 
-    if (timeLeft <= 0) {
-      endGame();
-    }
+    if (timeLeft <= 0) endGame();
   }, 1000);
 }
 
@@ -128,35 +150,47 @@ function endGame() {
   tapArea.textContent = "TIME UP!";
 
   setTimeout(() => {
-    const name = prompt("Enter your name for the leaderboard:");
-    if (name) saveScore(name, score);
-    renderLeaderboard();
+    const name = prompt("Enter your name (max 20 chars):");
+    if (!name) return;
+
+    const cleanName = name.trim().substring(0, 20);
+    if (cleanName) saveScore(cleanName, score);
   }, 200);
 }
 
-/* ===== LEADERBOARD (LocalStorage) ===== */
+/* ================= FIRESTORE LEADERBOARD ================= */
 
 function saveScore(name, score) {
-  let scores = JSON.parse(localStorage.getItem("tapFrenzyScores")) || [];
-  scores.push({ name, score });
-  scores.sort((a, b) => b.score - a.score);
-  scores = scores.slice(0, 10);
-  localStorage.setItem("tapFrenzyScores", JSON.stringify(scores));
+  db.collection("scores").add({
+    name,
+    score,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(err => {
+    console.error(err);
+    alert("Failed to save score.");
+  });
 }
 
 function renderLeaderboard() {
-  const scores = JSON.parse(localStorage.getItem("tapFrenzyScores")) || [];
-  let html = "<h3>🏆 Leaderboard</h3>";
+  leaderboardEl.innerHTML = "<h3>🏆 Leaderboard</h3><p>Loading...</p>";
 
-  if (scores.length === 0) {
-    html += "<p>No scores yet</p>";
-  } else {
-    scores.forEach((s, i) => {
-      html += `<p>${i + 1}. <strong>${s.name}</strong> – ${s.score}</p>`;
+  db.collection("scores")
+    .orderBy("score", "desc")
+    .limit(10)
+    .onSnapshot(snapshot => {
+      let html = "<h3>🏆 Leaderboard</h3>";
+
+      if (snapshot.empty) {
+        html += "<p>No scores yet</p>";
+      } else {
+        snapshot.forEach((doc, i) => {
+          const s = doc.data();
+          html += `<p>${i + 1}. <strong>${s.name}</strong> – ${s.score}</p>`;
+        });
+      }
+
+      leaderboardEl.innerHTML = html;
     });
-  }
-
-  leaderboardEl.innerHTML = html;
 }
 
 renderLeaderboard();
